@@ -62,7 +62,7 @@ Index: b/src/Cedar/Protocol.c
 +	CombinePathW(dirname, sizeof(dirname), statedir, L"chain_certs");
  
  	MakeDirExW(dirname);
- 
+
 Index: b/src/Mayaqua/Network.c
 ===================================================================
 --- a/src/Mayaqua/Network.c
@@ -87,4 +87,4 @@ Index: b/src/Mayaqua/Network.c
 +	CombinePathW(dirname, sizeof(dirname), statedir, L"chain_certs");
  
  	MakeDirExW(dirname);
- 
+
