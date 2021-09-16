@@ -1,0 +1,52 @@
+name: RetroFW_buildroot
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    container:
+      image: arcnor/retro-toolchains-buildroot
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+    - name: build config
+      run: make RetroFW_defconfig BR2_EXTERNAL=board/retrofw
+    - name: build
+      run: make sdk
+      env:
+        BR2_SDK_PREFIX: retrofw-buildroot
+        BR2_JLEVEL: 0
+        FORCE_UNSAFE_CONFIGURE: 1
+    - name: Create Dockerfile
+      run: export CROSS_TRIPLE=$(basename `ls buildroot/output/images/*.tar.gz` _sdk-buildroot.tar.gz) && sed "s/%%CROSS_TRIPLE%%/${CROSS_TRIPLE}/g" Dockerfile.template > Dockerfile
+    - uses: actions/upload-artifact@v2
+      with:
+        name: buildroot
+        path: |
+          output/images/*
+          Dockerfile
+  docker:
+    name: Create and push Docker image
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download result for build
+      uses: actions/download-artifact@v2
+      with:
+        name: buildroot
+    - name: Login to Docker registry
+      uses: docker/login-action@25c0ca8bab9893f0962d4ffd043f2b7ab90e9a3f
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: arcnor/toolchain-retrofw:wip

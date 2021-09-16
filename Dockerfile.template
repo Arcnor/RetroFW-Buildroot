@@ -1,0 +1,19 @@
+FROM arcnor/retro-toolchains-base
+
+ADD output/images/*_sdk*.tar.gz /opt/
+
+RUN mv /opt/*_sdk* /opt/retrofw && cd /opt/retrofw && ./relocate-sdk.sh
+
+ENV CROSS_TRIPLE %%CROSS_TRIPLE%%
+
+ENV CROSS_ROOT /opt/retrofw/
+
+ENV SYSROOT ${CROSS_ROOT}/${CROSS_TRIPLE}/sysroot/
+
+ENV PATH ${PATH}:${CROSS_ROOT}/bin:${SYSROOT}/usr/bin
+
+ENV ARCH arm
+
+ENV CROSS_COMPILE ${CROSS_TRIPLE}-
+
+WORKDIR /root
